@@ -1,12 +1,17 @@
 package telerik.project.movielibrary.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import telerik.project.movielibrary.exceptions.EntityDuplicateException;
 import telerik.project.movielibrary.exceptions.EntityNotFoundException;
+import telerik.project.movielibrary.helpers.mappers.UserMapper;
 import telerik.project.movielibrary.models.User;
+import telerik.project.movielibrary.models.dtos.user.UserCreateDTO;
+import telerik.project.movielibrary.models.dtos.user.UserResponseDTO;
+import telerik.project.movielibrary.models.dtos.user.UserUpdateDTO;
 import telerik.project.movielibrary.services.contracts.UserService;
 
 import java.util.List;
@@ -17,29 +22,45 @@ import java.util.List;
 public class UserRestController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @GetMapping
-    public List<User> getAll() {
-        try {
-            return userService.getAll();
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+    public List<UserResponseDTO> getAll() {
+        return userService.getAll().stream()
+                .map(userMapper::toResponse)
+                .toList();
     }
 
     @GetMapping("/{targetUserId}")
-    public User getById(@PathVariable Long targetUserId) {
+    public UserResponseDTO getById(@PathVariable Long targetUserId) {
         try {
-            return userService.getById(targetUserId);
+            User user = userService.getById(targetUserId);
+            return userMapper.toResponse(user);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
-    @PutMapping("/{targetUserId}")
-    public void update(@PathVariable Long targetUserId, @RequestBody User updatedUser) {
+    @PostMapping
+    public void create(@Valid @RequestBody UserCreateDTO dto) {
         try {
-            userService.update(targetUserId, updatedUser);
+            User user = userMapper.toCreate(dto);
+            userService.create(user);
+        } catch (EntityDuplicateException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/{targetUserId}")
+    public void update(
+            @PathVariable Long targetUserId,
+            @RequestBody UserUpdateDTO dto
+    ) {
+        try {
+            User targetUser = userService.getById(targetUserId);
+            userMapper.toUpdate(targetUser, dto);
+            userService.update(targetUserId, targetUser);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (EntityDuplicateException e) {
