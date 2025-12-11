@@ -15,6 +15,6 @@ CREATE TABLE movies
     movie_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL UNIQUE,
     director VARCHAR(255) NOT NULL,
-    release_year DATE NOT NULL,
+    release_year INT NOT NULL,
     rating DOUBLE
 );
