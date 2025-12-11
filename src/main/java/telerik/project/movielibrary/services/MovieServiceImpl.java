@@ -3,8 +3,8 @@ package telerik.project.movielibrary.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import telerik.project.movielibrary.exceptions.EntityDuplicateException;
 import telerik.project.movielibrary.exceptions.EntityNotFoundException;
+import telerik.project.movielibrary.helpers.MovieValidationHelper;
 import telerik.project.movielibrary.models.Movie;
 import telerik.project.movielibrary.repositories.MovieRepository;
 import telerik.project.movielibrary.services.contracts.MovieService;
@@ -37,12 +37,7 @@ public class MovieServiceImpl implements MovieService {
     @Override
     @Transactional
     public void create(Movie movie) {
-        String title = movie.getTitle();
-
-        if (movieRepository.existsByTitle(title)) {
-            throw new EntityDuplicateException("Movie", "title", title);
-        }
-
+        MovieValidationHelper.validateTitleNotTaken(movieRepository, movie.getTitle());
         movieRepository.save(movie);
     }
 
@@ -52,9 +47,7 @@ public class MovieServiceImpl implements MovieService {
         Movie targetMovie = getById(targetMovieId);
         String updatedTitle = updatedMovie.getTitle();
 
-        if (movieRepository.existsByTitle(updatedTitle)) {
-            throw new EntityDuplicateException("Movie", "title", updatedTitle);
-        }
+        MovieValidationHelper.validateTitleUpdate(movieRepository, updatedTitle, targetMovie.getTitle());
 
         targetMovie.setTitle(updatedTitle);
         targetMovie.setDirector(updatedMovie.getDirector());
