@@ -3,8 +3,8 @@ package telerik.project.movielibrary.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import telerik.project.movielibrary.exceptions.EntityDuplicateException;
 import telerik.project.movielibrary.exceptions.EntityNotFoundException;
+import telerik.project.movielibrary.helpers.UserValidationHelper;
 import telerik.project.movielibrary.models.User;
 import telerik.project.movielibrary.repositories.UserRepository;
 import telerik.project.movielibrary.services.contracts.UserService;
@@ -37,12 +37,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void create(User user) {
-        String username = user.getUsername();
-
-        if (userRepository.existsByUsername(username)) {
-            throw new EntityDuplicateException("User", "username", username);
-        }
-
+        UserValidationHelper.validateUsernameNotTaken(userRepository, user.getUsername());
         userRepository.save(user);
     }
 
@@ -52,9 +47,7 @@ public class UserServiceImpl implements UserService {
         User targetUser = getById(targetUserId);
         String updatedUsername = updatedUser.getUsername();
 
-        if (userRepository.existsByUsername(updatedUsername)) {
-            throw new EntityDuplicateException("User", "username", updatedUsername);
-        }
+        UserValidationHelper.validateUsernameUpdate(userRepository, updatedUsername, targetUser.getUsername());
 
         targetUser.setUsername(updatedUsername);
         targetUser.setPassword(updatedUser.getPassword());
