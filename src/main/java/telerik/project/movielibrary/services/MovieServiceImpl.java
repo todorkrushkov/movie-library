@@ -2,6 +2,7 @@ package telerik.project.movielibrary.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import telerik.project.movielibrary.exceptions.EntityDuplicateException;
 import telerik.project.movielibrary.exceptions.EntityNotFoundException;
 import telerik.project.movielibrary.models.Movie;
@@ -34,6 +35,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @Transactional
     public void create(Movie movie) {
         String title = movie.getTitle();
 
@@ -45,6 +47,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @Transactional
     public void update(Long targetMovieId, Movie updatedMovie) {
         Movie targetMovie = getById(targetMovieId);
         String updatedTitle = updatedMovie.getTitle();
@@ -61,6 +64,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @Transactional
     public void delete(Long targetMovieId) {
         Movie targetMovie = getById(targetMovieId);
         movieRepository.delete(targetMovie);
