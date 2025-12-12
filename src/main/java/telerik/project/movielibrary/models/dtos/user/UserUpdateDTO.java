@@ -15,7 +15,7 @@ public class UserUpdateDTO {
     @Size(min = 3, max = 32)
     private String username;
 
-    @Size(max = 128)
+    @Size(max = 255)
     private String password;
 
 }
