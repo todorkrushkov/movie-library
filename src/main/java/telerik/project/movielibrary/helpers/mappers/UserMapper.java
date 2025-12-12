@@ -11,6 +11,7 @@ public class UserMapper {
 
     public UserResponseDTO toResponse(User user) {
         UserResponseDTO dto = new UserResponseDTO();
+
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setRole(user.getRole().name());
@@ -19,8 +20,13 @@ public class UserMapper {
     }
 
     public void toUpdate(User user ,UserUpdateDTO dto) {
-        user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword());
+        if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
+            user.setUsername(dto.getUsername());
+        }
+
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            user.setPassword(dto.getPassword());
+        }
     }
 
     public User toCreate(UserCreateDTO dto) {

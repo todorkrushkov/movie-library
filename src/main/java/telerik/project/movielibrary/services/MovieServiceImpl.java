@@ -8,6 +8,7 @@ import telerik.project.movielibrary.helpers.MovieValidationHelper;
 import telerik.project.movielibrary.models.Movie;
 import telerik.project.movielibrary.repositories.MovieRepository;
 import telerik.project.movielibrary.services.contracts.MovieService;
+import telerik.project.movielibrary.services.contracts.OmdbService;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ import java.util.List;
 public class MovieServiceImpl implements MovieService {
 
     private final MovieRepository movieRepository;
+    private final OmdbService omdbService;
 
     @Override
     public List<Movie> getAll() {
@@ -39,6 +41,7 @@ public class MovieServiceImpl implements MovieService {
     public void create(Movie movie) {
         MovieValidationHelper.validateTitleNotTaken(movieRepository, movie.getTitle());
         movieRepository.save(movie);
+        omdbService.enrichMovieWithRating(movie);
     }
 
     @Override
