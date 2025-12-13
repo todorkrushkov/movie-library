@@ -3,6 +3,7 @@ package telerik.project.movielibrary.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import telerik.project.movielibrary.exceptions.EntityDuplicateException;
@@ -24,6 +25,7 @@ public class UserRestController {
     private final UserService userService;
     private final UserMapper userMapper;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<UserResponseDTO> getAll() {
         return userService.getAll().stream()
@@ -31,6 +33,7 @@ public class UserRestController {
                 .toList();
     }
 
+    @PreAuthorize("@securityUtil.canModify(#targetUserId, authentication)")
     @GetMapping("/{targetUserId}")
     public UserResponseDTO getById(@PathVariable Long targetUserId) {
         try {
@@ -41,26 +44,29 @@ public class UserRestController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public void create(@Valid @RequestBody UserCreateDTO dto) {
+    public UserResponseDTO create(@Valid @RequestBody UserCreateDTO dto) {
         try {
             User user = userMapper.toCreate(dto);
             userService.create(user);
+            return userMapper.toResponse(user);
         } catch (EntityDuplicateException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
     }
 
-
+    @PreAuthorize("@securityUtil.canModify(#targetUserId, authentication)")
     @PutMapping("/{targetUserId}")
-    public void update(
+    public UserResponseDTO update(
             @PathVariable Long targetUserId,
-            @RequestBody UserUpdateDTO dto
+            @Valid @RequestBody UserUpdateDTO dto
     ) {
         try {
             User targetUser = userService.getById(targetUserId);
             userMapper.toUpdate(targetUser, dto);
             userService.update(targetUserId, targetUser);
+            return userMapper.toResponse(targetUser);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (EntityDuplicateException e) {
@@ -68,6 +74,7 @@ public class UserRestController {
         }
     }
 
+    @PreAuthorize("@securityUtil.canModify(#targetUserId, authentication)")
     @DeleteMapping("/{targetUserId}")
     public void delete(@PathVariable Long targetUserId) {
         try {
