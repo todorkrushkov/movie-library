@@ -2,6 +2,7 @@ package telerik.project.movielibrary.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import telerik.project.movielibrary.exceptions.EntityDuplicateException;
@@ -23,6 +24,7 @@ public class MovieRestController {
     private final MovieService movieService;
     private final MovieMapper movieMapper;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public List<MovieResponseDTO> getAll() {
         return movieService.getAll().stream()
@@ -30,6 +32,7 @@ public class MovieRestController {
                 .toList();
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{targetMovieId}")
     public MovieResponseDTO getById(@PathVariable Long targetMovieId) {
         try {
@@ -40,6 +43,7 @@ public class MovieRestController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public void create(@RequestBody MovieCreateDTO dto) {
         try {
@@ -50,6 +54,7 @@ public class MovieRestController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{targetMovieId}")
     public void update(
             @PathVariable Long targetMovieId,
@@ -66,6 +71,7 @@ public class MovieRestController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{targetMovieId}")
     public void delete(@PathVariable Long targetMovieId) {
         try {
