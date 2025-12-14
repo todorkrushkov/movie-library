@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import telerik.project.movielibrary.exceptions.EntityNotFoundException;
-import telerik.project.movielibrary.helpers.MovieValidationHelper;
+import telerik.project.movielibrary.helpers.validations.MovieValidationHelper;
 import telerik.project.movielibrary.models.Movie;
 import telerik.project.movielibrary.repositories.MovieRepository;
 import telerik.project.movielibrary.services.contracts.MovieService;
