@@ -1,4 +1,4 @@
-package telerik.project.movielibrary.helpers;
+package telerik.project.movielibrary.helpers.validations;
 
 import telerik.project.movielibrary.exceptions.EntityDuplicateException;
 import telerik.project.movielibrary.repositories.MovieRepository;
