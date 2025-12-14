@@ -1,12 +1,8 @@
 package telerik.project.movielibrary.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import telerik.project.movielibrary.exceptions.EntityDuplicateException;
-import telerik.project.movielibrary.exceptions.EntityNotFoundException;
 import telerik.project.movielibrary.helpers.mappers.MovieMapper;
 import telerik.project.movielibrary.models.Movie;
 import telerik.project.movielibrary.models.dtos.movie.MovieCreateDTO;
@@ -24,7 +20,7 @@ public class MovieRestController {
     private final MovieService movieService;
     private final MovieMapper movieMapper;
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("@validateAuth.isAuthenticated(authentication)")
     @GetMapping
     public List<MovieResponseDTO> getAll() {
         return movieService.getAll().stream()
@@ -32,52 +28,34 @@ public class MovieRestController {
                 .toList();
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("@validateAuth.isAuthenticated(authentication)")
     @GetMapping("/{targetMovieId}")
     public MovieResponseDTO getById(@PathVariable Long targetMovieId) {
-        try {
             Movie movie = movieService.getById(targetMovieId);
             return movieMapper.toResponse(movie);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@validateAuth.isAdmin(authentication)")
     @PostMapping
     public void create(@RequestBody MovieCreateDTO dto) {
-        try {
             Movie movie = movieMapper.toCreate(dto);
             movieService.create(movie);
-        } catch (EntityDuplicateException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
-        }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@validateAuth.isAdmin(authentication)")
     @PutMapping("/{targetMovieId}")
     public void update(
             @PathVariable Long targetMovieId,
             @RequestBody MovieUpdateDTO dto
             ) {
-        try {
             Movie targetMovie = movieService.getById(targetMovieId);
             movieMapper.toUpdate(targetMovie, dto);
             movieService.update(targetMovieId, targetMovie);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (EntityDuplicateException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
-        }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@validateAuth.isAdmin(authentication)")
     @DeleteMapping("/{targetMovieId}")
     public void delete(@PathVariable Long targetMovieId) {
-        try {
             movieService.delete(targetMovieId);
-        } catch (EntityNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
     }
 }
