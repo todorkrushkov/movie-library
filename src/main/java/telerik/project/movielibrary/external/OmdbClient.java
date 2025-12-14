@@ -1,6 +1,7 @@
 package telerik.project.movielibrary.external;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -10,11 +11,13 @@ public class OmdbClient {
 
     private final RestClient omdbRestClient;
 
+    @Value("${omdb.api.key}")
+    private String apiKey;
+
     public OmdbMovieResponse fetchByTitle(String title) {
         return omdbRestClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .queryParam("i", "tt3896198")
-                        .queryParam("apikey", "f986b0bc")
+                        .queryParam("apikey", apiKey)
                         .queryParam("t", title)
                         .build())
                 .retrieve()
