@@ -140,7 +140,7 @@ All endpoints, request bodies, and response models are documented.
 
 1. Clone the repository
    ```bash
-   git clone <repository-url>
+   git clone <[repository-url](https://github.com/todorkrushkov/movie-library)>
    ```
 
 2. Initialize the database
