@@ -72,7 +72,7 @@ class MovieRestControllerTests {
 
         when(movieService.getById(10L)).thenReturn(movie);
 
-        mockMvc.perform(get("/api/movies/10"))
+        mockMvc.perform(get("/api/movies/id/10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Inception"));
 
@@ -97,11 +97,14 @@ class MovieRestControllerTests {
     @Test
     void create_whenUser_shouldReturn403() throws Exception {
         when(authValidationHelper.isAdmin(any()))
-                .thenThrow(new AuthorizationFailureException("Only admins"));
+                .thenThrow(new AuthorizationFailureException("Forbidden"));
+
+        MovieCreateDTO dto = new MovieCreateDTO();
+        dto.setTitle("title");
 
         mockMvc.perform(post("/api/movies")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isForbidden());
 
         verify(movieService, never()).create(any());
@@ -128,11 +131,14 @@ class MovieRestControllerTests {
     @Test
     void update_whenUser_shouldReturn403() throws Exception {
         when(authValidationHelper.isAdmin(any()))
-                .thenThrow(new AuthorizationFailureException("Only admins"));
+                .thenThrow(new AuthorizationFailureException("Forbidden"));
+
+        MovieUpdateDTO dto = new MovieUpdateDTO();
+        dto.setTitle("newTitle");
 
         mockMvc.perform(put("/api/movies/5")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isForbidden());
 
         verify(movieService, never()).update(anyLong(), any());
@@ -149,7 +155,7 @@ class MovieRestControllerTests {
     @Test
     void delete_whenUser_shouldReturn403() throws Exception {
         when(authValidationHelper.isAdmin(any()))
-                .thenThrow(new AuthorizationFailureException("Only admins"));
+                .thenThrow(new AuthorizationFailureException("Forbidden"));
 
         mockMvc.perform(delete("/api/movies/5"))
                 .andExpect(status().isForbidden());

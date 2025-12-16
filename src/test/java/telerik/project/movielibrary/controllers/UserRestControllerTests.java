@@ -84,7 +84,7 @@ class UserRestControllerTests {
 
         when(userService.getById(5L)).thenReturn(user);
 
-        mockMvc.perform(get("/api/users/5"))
+        mockMvc.perform(get("/api/users/id/5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("me"));
 
@@ -96,7 +96,7 @@ class UserRestControllerTests {
         when(authValidationHelper.isOwnerOrAdmin(eq(5L), any()))
                 .thenThrow(new AuthorizationFailureException("Forbidden"));
 
-        mockMvc.perform(get("/api/users/5"))
+        mockMvc.perform(get("/api/users/id/5"))
                 .andExpect(status().isForbidden());
 
         verify(userService, never()).getById(anyLong());
