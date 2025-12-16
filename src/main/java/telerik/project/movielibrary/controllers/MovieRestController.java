@@ -3,6 +3,7 @@ package telerik.project.movielibrary.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,7 @@ public class MovieRestController {
     @ApiResponse(responseCode = "409", description = "Movie with the same title already exists")
     @PreAuthorize("@validateAuth.isAdmin(authentication)")
     @PostMapping
-    public void create(@RequestBody MovieCreateDTO dto) {
+    public void create(@Valid @RequestBody MovieCreateDTO dto) {
             Movie movie = movieMapper.toCreate(dto);
             movieService.create(movie);
     }
@@ -68,7 +69,7 @@ public class MovieRestController {
     @PutMapping("/{targetMovieId}")
     public void update(
             @PathVariable Long targetMovieId,
-            @RequestBody MovieUpdateDTO dto
+            @Valid @RequestBody MovieUpdateDTO dto
             ) {
             Movie targetMovie = movieService.getById(targetMovieId);
             movieMapper.toUpdate(targetMovie, dto);
