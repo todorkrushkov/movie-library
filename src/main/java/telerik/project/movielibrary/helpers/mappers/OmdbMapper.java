@@ -8,7 +8,7 @@ import telerik.project.movielibrary.models.Movie;
 public class OmdbMapper {
 
     public void applyRating(Movie movie, OmdbMovieResponse omdb) {
-        if ("True".equalsIgnoreCase(omdb.getResponse())) {
+        if (omdb.getResponse().equals("True")) {
             movie.setRating(omdb.getImdbRating());
         }
     }
