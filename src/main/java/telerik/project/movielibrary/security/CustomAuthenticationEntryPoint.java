@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
-import telerik.project.movielibrary.models.dtos.ApiResponseException;
+import telerik.project.movielibrary.models.dtos.api.ApiResponseDTO;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -25,16 +25,18 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             HttpServletResponse response,
             AuthenticationException authenticationException
     ) throws IOException {
-        ApiResponseException error =  ApiResponseException.builder()
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                .message("Invalid username or password.")
-                .path(request.getRequestURI())
-                .timestamp(LocalDateTime.now())
-                .build();
+        ApiResponseDTO<Void> apiResponse = new ApiResponseDTO<> (
+         false,
+         HttpStatus.UNAUTHORIZED.value(),
+         request.getRequestURI(),
+         "Invalid username or password.",
+         null,
+         null,
+         LocalDateTime.now()
+        );
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json");
-        objectMapper.writeValue(response.getOutputStream(), error);
+        objectMapper.writeValue(response.getOutputStream(), apiResponse);
     }
 }
