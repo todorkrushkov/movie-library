@@ -7,9 +7,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import telerik.project.movielibrary.models.dtos.ApiResponseException;
+import telerik.project.movielibrary.models.dtos.api.ApiResponseDTO;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,55 +16,39 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationFailureException.class)
-    public ResponseEntity<ApiResponseException> handleAuthentication(
+    public ResponseEntity<ApiResponseDTO<Void>> handleAuthentication(
             AuthenticationFailureException e,
             HttpServletRequest request
     ) {
-        return buildResponse(
-                HttpStatus.UNAUTHORIZED,
-                e.getMessage(),
-                request.getRequestURI()
-        );
+        return error(HttpStatus.UNAUTHORIZED, request, e.getMessage());
     }
 
     @ExceptionHandler(AuthorizationFailureException.class)
-    public ResponseEntity<ApiResponseException> handleAuthorization(
+    public ResponseEntity<ApiResponseDTO<Void>> handleAuthorization(
             AuthorizationFailureException e,
             HttpServletRequest request
     ) {
-        return buildResponse(
-                HttpStatus.FORBIDDEN,
-                e.getMessage(),
-                request.getRequestURI()
-        );
+        return error(HttpStatus.FORBIDDEN, request, e.getMessage());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiResponseException> handleEntityNotFound(
+    public ResponseEntity<ApiResponseDTO<Void>> handleNotFound(
             EntityNotFoundException e,
             HttpServletRequest request
     ) {
-        return buildResponse(
-                HttpStatus.NOT_FOUND,
-                e.getMessage(),
-                request.getRequestURI()
-        );
+        return error(HttpStatus.NOT_FOUND, request, e.getMessage());
     }
 
     @ExceptionHandler(EntityDuplicateException.class)
-    public ResponseEntity<ApiResponseException> handleDuplicateException(
+    public ResponseEntity<ApiResponseDTO<Void>> handleDuplicate(
             EntityDuplicateException e,
             HttpServletRequest request
     ) {
-        return buildResponse(
-                HttpStatus.CONFLICT,
-                e.getMessage(),
-                request.getRequestURI()
-        );
+        return error(HttpStatus.CONFLICT, request, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponseException> handleValidationErrors(
+    public ResponseEntity<ApiResponseDTO<Void>> handleValidation(
             MethodArgumentNotValidException e,
             HttpServletRequest request
     ) {
@@ -74,40 +57,30 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         }
 
-        ApiResponseException response = ApiResponseException.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message("Validation failed")
-                .path(request.getRequestURI())
-                .timestamp(LocalDateTime.now())
-                .details(errors)
-                .build();
-
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponseDTO.validationError(
+                        HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                        request.getRequestURI(),
+                        "Validation failed,",
+                        errors
+                ));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseException> handleUnexpected(HttpServletRequest request) {
-        return buildResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unexpected server error.",
-                request.getRequestURI()
-        );
+    public ResponseEntity<ApiResponseDTO<Void>> handleUnexpected(HttpServletRequest request) {
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, request, "Unexpected server error.");
     }
 
-    private ResponseEntity<ApiResponseException> buildResponse(
+    private ResponseEntity<ApiResponseDTO<Void>> error(
             HttpStatus status,
-            String message,
-            String path
+            HttpServletRequest request,
+            String message
     ) {
-        ApiResponseException response = ApiResponseException.builder()
-                .status(status.value())
-                .error(status.getReasonPhrase())
-                .message(message)
-                .path(path)
-                .timestamp(LocalDateTime.now())
-                .build();
-
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity
+                .status(status)
+                .body(ApiResponseDTO.error(
+                        status.value(), request.getRequestURI(), message
+                ));
     }
 }

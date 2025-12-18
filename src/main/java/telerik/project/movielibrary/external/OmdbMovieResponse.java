@@ -11,4 +11,7 @@ public class OmdbMovieResponse {
 
     @JsonProperty("Response")
     private String response;
+
+    @JsonProperty("Error")
+    private String error;
 }
