@@ -39,7 +39,7 @@ class UserServiceImplTests {
     void getAll_shouldReturnAllUsers() {
         when(userRepository.findAll()).thenReturn(List.of(existingUser));
 
-        List<User> result = userService.getAll();
+        List<User> result = userService.getAll(isNull(), isNull());
 
         assertEquals(1, result.size());
         assertSame(existingUser, result.get(0));
@@ -65,27 +65,6 @@ class UserServiceImplTests {
         assertThrows(EntityNotFoundException.class, () -> userService.getById(42L));
 
         verify(userRepository).findById(42L);
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getByUsername_whenExists_shouldReturnUser() {
-        when(userRepository.findByUsername("oldname")).thenReturn(Optional.of(existingUser));
-
-        User result = userService.getByUsername("oldname");
-
-        assertSame(existingUser, result);
-        verify(userRepository).findByUsername("oldname");
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getByUsername_whenMissing_shouldThrowEntityNotFoundException() {
-        when(userRepository.findByUsername("missing")).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> userService.getByUsername("missing"));
-
-        verify(userRepository).findByUsername("missing");
         verifyNoMoreInteractions(userRepository);
     }
 

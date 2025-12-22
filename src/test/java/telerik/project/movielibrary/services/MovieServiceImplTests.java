@@ -44,7 +44,14 @@ class MovieServiceImplTests {
     void getAll_shouldReturnAllMovies() {
         when(movieRepository.findAll()).thenReturn(List.of(existingMovie));
 
-        List<Movie> result = movieService.getAll();
+        List<Movie> result = movieService.getAll(
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull()
+        );
 
         assertEquals(1, result.size());
         assertSame(existingMovie, result.get(0));
@@ -70,30 +77,6 @@ class MovieServiceImplTests {
         assertThrows(EntityNotFoundException.class, () -> movieService.getById(42L));
 
         verify(movieRepository).findById(42L);
-        verifyNoMoreInteractions(movieRepository, omdbService);
-    }
-
-    @Test
-    void getByTitle_whenExists_shouldReturnMovie() {
-        when(movieRepository.findByTitle("Old Title"))
-                .thenReturn(Optional.of(existingMovie));
-
-        Movie result = movieService.getByTitle("Old Title");
-
-        assertSame(existingMovie, result);
-        verify(movieRepository).findByTitle("Old Title");
-        verifyNoMoreInteractions(movieRepository, omdbService);
-    }
-
-    @Test
-    void getByTitle_whenMissing_shouldThrowEntityNotFoundException() {
-        when(movieRepository.findByTitle("Missing"))
-                .thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class,
-                () -> movieService.getByTitle("Missing"));
-
-        verify(movieRepository).findByTitle("Missing");
         verifyNoMoreInteractions(movieRepository, omdbService);
     }
 

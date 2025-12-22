@@ -6,11 +6,16 @@ import java.util.List;
 
 public interface MovieService {
 
-    List<Movie> getAll();
+    List<Movie> getAll(
+            String title,
+            String director,
+            Integer yearFrom,
+            Integer yearTo,
+            Double ratingMin,
+            Double ratingMax
+    );
 
     Movie getById(Long targetMovieId);
-
-    Movie getByTitle(String title);
 
     void create(Movie movie);
 

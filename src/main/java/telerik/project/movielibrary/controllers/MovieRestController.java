@@ -29,11 +29,20 @@ public class MovieRestController {
     private final MovieService movieService;
     private final MovieMapper movieMapper;
 
-    @Operation(summary = "Get all movies")
+    @Operation(summary = "Get all movies with filters")
     @PreAuthorize("@validateAuth.isAuthenticated(authentication)")
     @GetMapping
-    public ApiResponseDTO<List<MovieResponseDTO>> getAll() {
-        List<MovieResponseDTO> movies = movieService.getAll().stream()
+    public ApiResponseDTO<List<MovieResponseDTO>> getAll(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String director,
+            @RequestParam(required = false) Integer yearFrom,
+            @RequestParam(required = false) Integer yearTo,
+            @RequestParam(required = false) Double ratingMin,
+            @RequestParam(required = false) Double ratingMax
+    ) {
+        List<MovieResponseDTO> movies = movieService
+                .getAll(title, director, yearFrom, yearTo, ratingMin, ratingMax)
+                .stream()
                 .map(movieMapper::toResponse)
                 .toList();
 
@@ -50,20 +59,6 @@ public class MovieRestController {
     @GetMapping("/{targetMovieId}")
     public ApiResponseDTO<MovieResponseDTO> getById(@PathVariable Long targetMovieId) {
         Movie movie = movieService.getById(targetMovieId);
-
-        return ApiResponseDTO.success(
-                HttpStatus.OK.value(),
-                null,
-                movieMapper.toResponse(movie)
-        );
-    }
-
-    @Operation(summary = "Get movie by Title")
-    @ApiResponse(responseCode = "404", description = "Movie not found")
-    @PreAuthorize("@validateAuth.isAuthenticated(authentication)")
-    @GetMapping("/title/{targetMovieTitle}")
-    public ApiResponseDTO<MovieResponseDTO> getByTitle(@PathVariable String targetMovieTitle) {
-        Movie movie = movieService.getByTitle(targetMovieTitle);
 
         return ApiResponseDTO.success(
                 HttpStatus.OK.value(),

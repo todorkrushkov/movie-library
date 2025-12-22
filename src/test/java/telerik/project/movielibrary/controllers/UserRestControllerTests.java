@@ -18,6 +18,8 @@ import telerik.project.movielibrary.models.dtos.user.UserCreateDTO;
 import telerik.project.movielibrary.models.dtos.user.UserUpdateDTO;
 import telerik.project.movielibrary.services.contracts.UserService;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -56,13 +58,16 @@ class UserRestControllerTests {
         user.setId(1L);
         user.setUsername("admin");
 
-        when(userService.getAll()).thenReturn(java.util.List.of(user));
+        when(userService.getAll(
+                isNull(),
+                isNull()
+        )).thenReturn(List.of(user));
 
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].username").value("admin"));
 
-        verify(userService).getAll();
+        verify(userService).getAll(null, null);
     }
 
     @Test
@@ -73,7 +78,7 @@ class UserRestControllerTests {
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isForbidden());
 
-        verify(userService, never()).getAll();
+        verify(userService, never()).getAll(eq("maria"), null);
     }
 
     @Test

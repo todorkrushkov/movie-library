@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import telerik.project.movielibrary.helpers.mappers.UserMapper;
+import telerik.project.movielibrary.models.Role;
 import telerik.project.movielibrary.models.User;
 import telerik.project.movielibrary.models.dtos.api.ApiResponseDTO;
 import telerik.project.movielibrary.models.dtos.user.UserCreateDTO;
@@ -29,11 +30,16 @@ public class UserRestController {
     private final UserService userService;
     private final UserMapper userMapper;
 
-    @Operation(summary = "Get all users")
+    @Operation(summary = "Get all users with filters")
     @PreAuthorize("@validateAuth.isAdmin(authentication)")
     @GetMapping
-    public ApiResponseDTO<List<UserResponseDTO>> getAll() {
-        List<UserResponseDTO> users = userService.getAll().stream()
+    public ApiResponseDTO<List<UserResponseDTO>> getAll(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) Role role
+            ) {
+        List<UserResponseDTO> users = userService
+                .getAll(username, role)
+                .stream()
                 .map(userMapper::toResponse)
                 .toList();
 
@@ -50,20 +56,6 @@ public class UserRestController {
     @GetMapping("/{targetUserId}")
     public ApiResponseDTO<UserResponseDTO> getById(@PathVariable Long targetUserId) {
         User user = userService.getById(targetUserId);
-
-        return ApiResponseDTO.success(
-                HttpStatus.OK.value(),
-                null,
-                userMapper.toResponse(user)
-        );
-    }
-
-    @Operation(summary = "Get user by Username")
-    @ApiResponse(responseCode = "404", description = "User not found")
-    @PreAuthorize("@validateAuth.isAdmin(authentication)")
-    @GetMapping("/username/{targetUsername}")
-    public ApiResponseDTO<UserResponseDTO> getByUsername(@PathVariable String targetUsername) {
-        User user = userService.getByUsername(targetUsername);
 
         return ApiResponseDTO.success(
                 HttpStatus.OK.value(),

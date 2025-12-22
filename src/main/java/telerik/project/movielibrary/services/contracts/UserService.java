@@ -1,16 +1,15 @@
 package telerik.project.movielibrary.services.contracts;
 
+import telerik.project.movielibrary.models.Role;
 import telerik.project.movielibrary.models.User;
 
 import java.util.List;
 
 public interface UserService {
 
-    List<User> getAll();
+    List<User> getAll(String username, Role role);
 
     User getById(Long targetUserId);
-
-    User getByUsername(String username);
 
     void create(User user);
 
