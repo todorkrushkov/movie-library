@@ -3,8 +3,10 @@ package telerik.project.movielibrary.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import telerik.project.movielibrary.exceptions.EntityNotFoundException;
 import telerik.project.movielibrary.helpers.validations.UserValidationHelper;
+import telerik.project.movielibrary.models.Role;
 import telerik.project.movielibrary.models.User;
 import telerik.project.movielibrary.repositories.UserRepository;
 import telerik.project.movielibrary.services.contracts.UserService;
@@ -18,20 +20,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public List<User> getAll(String username, Role role) {
+        return userRepository.search(username, role);
     }
 
     @Override
     public User getById(Long targetUserId) {
         return userRepository.findById(targetUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User", targetUserId));
-    }
-
-    @Override
-    public User getByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User", "username", username));
     }
 
     @Override

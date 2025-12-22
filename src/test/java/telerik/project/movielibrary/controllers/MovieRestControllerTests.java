@@ -18,6 +18,8 @@ import telerik.project.movielibrary.models.dtos.movie.MovieCreateDTO;
 import telerik.project.movielibrary.models.dtos.movie.MovieUpdateDTO;
 import telerik.project.movielibrary.services.contracts.MovieService;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -55,13 +57,59 @@ class MovieRestControllerTests {
         movie.setId(1L);
         movie.setTitle("Interstellar");
 
-        when(movieService.getAll()).thenReturn(java.util.List.of(movie));
+        when(movieService.getAll(
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull()
+        )).thenReturn(List.of(movie));
 
         mockMvc.perform(get("/api/movies"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Interstellar"));
+                .andExpect(jsonPath("$.data[0].title").value("Interstellar"));
 
-        verify(movieService).getAll();
+        verify(movieService).getAll(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
+    @Test
+    void getAll_withTitleFilter_shouldReturnFilteredMovies() throws Exception {
+        Movie movie = new Movie();
+        movie.setId(1L);
+        movie.setTitle("Interstellar");
+
+        when(movieService.getAll(
+                eq("Interstellar"),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull(),
+                isNull()
+        )).thenReturn(List.of(movie));
+
+        mockMvc.perform(
+                        get("/api/movies")
+                                .param("title", "Interstellar")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].title").value("Interstellar"));
+
+        verify(movieService).getAll(
+                "Interstellar",
+                null,
+                null,
+                null,
+                null,
+                null
+        );
     }
 
     @Test

@@ -67,10 +67,10 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(Exception.class)
+    /*@ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponseDTO<Void>> handleUnexpected(HttpServletRequest request) {
         return error(HttpStatus.INTERNAL_SERVER_ERROR, request, "Unexpected server error.");
-    }
+    }*/
 
     private ResponseEntity<ApiResponseDTO<Void>> error(
             HttpStatus status,

@@ -20,20 +20,21 @@ public class MovieServiceImpl implements MovieService {
     private final OmdbService omdbService;
 
     @Override
-    public List<Movie> getAll() {
-        return movieRepository.findAll();
+    public List<Movie> getAll(
+            String title,
+            String director,
+            Integer yearFrom,
+            Integer yearTo,
+            Double ratingMin,
+            Double ratingMax
+    ) {
+        return movieRepository.search(title, director, yearFrom, yearTo, ratingMin, ratingMax);
     }
 
     @Override
     public Movie getById(Long targetMovieId) {
         return movieRepository.findById(targetMovieId)
                 .orElseThrow(() -> new EntityNotFoundException("Movie", targetMovieId));
-    }
-
-    @Override
-    public Movie getByTitle(String title) {
-        return movieRepository.findByTitle(title)
-                .orElseThrow(() -> new EntityNotFoundException("Movie", "title", title));
     }
 
     @Override
