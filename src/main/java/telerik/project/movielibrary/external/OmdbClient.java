@@ -28,7 +28,7 @@ public class OmdbClient {
                     .retrieve()
                     .body(OmdbMovieResponse.class);
 
-            if (response.getResponse() != null && response.getResponse().equals(Boolean.TRUE)) {
+            if ("False".equalsIgnoreCase(response.getResponse())) {
                 throw new ExternalApiServiceException(response.getError());
             }
 

@@ -67,10 +67,24 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    /*@ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponseDTO<Void>> handleUnexpected(HttpServletRequest request) {
-        return error(HttpStatus.INTERNAL_SERVER_ERROR, request, "Unexpected server error.");
-    }*/
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleBadCredentials(
+            org.springframework.security.authentication.BadCredentialsException e,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponseDTO.error(
+                        HttpStatus.UNAUTHORIZED.value(),
+                        request.getRequestURI(),
+                        "Wrong username or password!"
+                ));
+    }
+
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<ApiResponseDTO<Void>> handleUnexpected(HttpServletRequest request) {
+//        return error(HttpStatus.INTERNAL_SERVER_ERROR, request, "Unexpected server error.");
+//    }
 
     private ResponseEntity<ApiResponseDTO<Void>> error(
             HttpStatus status,
