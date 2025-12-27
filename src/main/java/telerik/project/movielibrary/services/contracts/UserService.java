@@ -17,4 +17,5 @@ public interface UserService {
 
     void delete(Long targetUserId);
 
+    long count();
 }

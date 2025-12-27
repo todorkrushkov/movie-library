@@ -23,10 +23,6 @@ public class UserMapper {
         if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
             user.setUsername(dto.getUsername());
         }
-
-        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            user.setPassword(dto.getPassword());
-        }
     }
 
     public User toCreate(UserCreateDTO dto) {
