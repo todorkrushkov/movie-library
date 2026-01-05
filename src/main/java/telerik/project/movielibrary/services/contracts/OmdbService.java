@@ -4,5 +4,5 @@ import telerik.project.movielibrary.models.Movie;
 
 public interface OmdbService {
 
-    void enrichMovieWithRating(Movie movie);
+    void enrichMovie(Movie movie);
 }

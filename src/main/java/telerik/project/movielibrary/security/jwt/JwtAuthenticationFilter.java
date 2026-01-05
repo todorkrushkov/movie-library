@@ -52,7 +52,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         } catch (Exception e) {
-            logger.error("JWT Authentication failed: " + e.getMessage());
+            SecurityContextHolder.clearContext();
+            logger.warn("Invalid JWT token.");
         }
         filterChain.doFilter(request, response);
     }
@@ -61,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (request.getCookies() == null) return null;
 
         for (Cookie cookie : request.getCookies()) {
-            if ("JWT".equals(cookie.getName())) {
+            if ("JWT_TOKEN".equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }

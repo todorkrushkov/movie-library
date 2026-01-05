@@ -20,6 +20,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+
     @Override
     public List<User> getAll(String username, Role role) {
         return userRepository.search(username, role);

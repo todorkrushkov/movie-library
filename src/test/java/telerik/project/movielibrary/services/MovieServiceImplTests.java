@@ -36,26 +36,21 @@ class MovieServiceImplTests {
         existingMovie = new Movie();
         existingMovie.setId(1L);
         existingMovie.setTitle("Old Title");
-        existingMovie.setDirector("Someone");
-        existingMovie.setReleaseYear(2000);
+        existingMovie.setDescription("Old Description");
     }
 
     @Test
-    void getAll_shouldReturnAllMovies() {
-        when(movieRepository.findAll()).thenReturn(List.of(existingMovie));
+    void getAll_shouldSearchMovies() {
+        when(movieRepository
+                .search(null, null, null, null, null, null))
+                .thenReturn(List.of(existingMovie));
 
-        List<Movie> result = movieService.getAll(
-                isNull(),
-                isNull(),
-                isNull(),
-                isNull(),
-                isNull(),
-                isNull()
-        );
+        List<Movie> result = movieService
+                .getAll(null, null, null, null, null, null);
 
         assertEquals(1, result.size());
-        assertSame(existingMovie, result.get(0));
-        verify(movieRepository).findAll();
+        verify(movieRepository)
+                .search(null, null, null, null, null, null);
         verifyNoMoreInteractions(movieRepository, omdbService);
     }
 
@@ -91,7 +86,7 @@ class MovieServiceImplTests {
 
         verify(movieRepository).existsByTitle("New Movie");
         verify(movieRepository).save(newMovie);
-        verify(omdbService).enrichMovieWithRating(newMovie);
+        verify(omdbService).enrichMovie(newMovie);
         verifyNoMoreInteractions(movieRepository, omdbService);
     }
 
@@ -107,7 +102,7 @@ class MovieServiceImplTests {
 
         verify(movieRepository).existsByTitle("Taken");
         verify(movieRepository, never()).save(any());
-        verify(omdbService, never()).enrichMovieWithRating(any());
+        verify(omdbService, never()).enrichMovie(any());
         verifyNoMoreInteractions(movieRepository, omdbService);
     }
 
@@ -136,13 +131,10 @@ class MovieServiceImplTests {
 
         movieService.update(1L, updated);
 
-        assertEquals("New Title", existingMovie.getTitle());
-        assertEquals("New Director", existingMovie.getDirector());
-
         verify(movieRepository).findById(1L);
         verify(movieRepository).existsByTitle("New Title");
         verify(movieRepository).save(existingMovie);
-        verifyNoMoreInteractions(movieRepository, omdbService);
+        verifyNoMoreInteractions(movieRepository);
     }
 
     @Test

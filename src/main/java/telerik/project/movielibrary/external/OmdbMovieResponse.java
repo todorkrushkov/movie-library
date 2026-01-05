@@ -9,6 +9,12 @@ public class OmdbMovieResponse {
     @JsonProperty("imdbRating")
     private Double imdbRating;
 
+    @JsonProperty("Director")
+    private String director;
+
+    @JsonProperty("Released")
+    private String released;
+
     @JsonProperty("Response")
     private String response;
 

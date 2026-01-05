@@ -3,6 +3,7 @@ package telerik.project.movielibrary.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import telerik.project.movielibrary.external.OmdbClient;
 import telerik.project.movielibrary.external.OmdbMovieResponse;
 import telerik.project.movielibrary.helpers.mappers.OmdbMapper;
@@ -20,10 +21,11 @@ public class OmdbServiceImpl implements OmdbService {
 
     @Override
     @Async
-    public void enrichMovieWithRating(Movie movie) {
+    @Transactional
+    public void enrichMovie(Movie movie) {
         OmdbMovieResponse response = omdbClient.fetchByTitle(movie.getTitle());
 
-        omdbMapper.applyRating(movie, response);
+        omdbMapper.applyOmdbData(movie, response);
         movieRepository.save(movie);
     }
 }

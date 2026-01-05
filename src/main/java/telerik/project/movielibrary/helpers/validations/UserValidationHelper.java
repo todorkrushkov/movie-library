@@ -25,5 +25,4 @@ public final class UserValidationHelper {
             throw new EntityDuplicateException("User", "username", username);
         }
     }
-
 }

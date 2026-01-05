@@ -10,6 +10,7 @@ import telerik.project.movielibrary.repositories.MovieRepository;
 import telerik.project.movielibrary.services.contracts.MovieService;
 import telerik.project.movielibrary.services.contracts.OmdbService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -23,12 +24,12 @@ public class MovieServiceImpl implements MovieService {
     public List<Movie> getAll(
             String title,
             String director,
-            Integer yearFrom,
-            Integer yearTo,
+            LocalDate dateFrom,
+            LocalDate dateTo,
             Double ratingMin,
             Double ratingMax
     ) {
-        return movieRepository.search(title, director, yearFrom, yearTo, ratingMin, ratingMax);
+        return movieRepository.search(title, director, dateFrom, dateTo, ratingMin, ratingMax);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class MovieServiceImpl implements MovieService {
     public void create(Movie movie) {
         MovieValidationHelper.validateTitleNotTaken(movieRepository, movie.getTitle());
         movieRepository.save(movie);
-        omdbService.enrichMovieWithRating(movie);
+        omdbService.enrichMovie(movie);
     }
 
     @Override
@@ -54,10 +55,8 @@ public class MovieServiceImpl implements MovieService {
         MovieValidationHelper.validateTitleUpdate(movieRepository, updatedTitle, targetMovie.getTitle());
 
         targetMovie.setTitle(updatedTitle);
-        targetMovie.setDirector(updatedMovie.getDirector());
-        targetMovie.setReleaseYear(updatedMovie.getReleaseYear());
-
         movieRepository.save(targetMovie);
+        omdbService.enrichMovie(targetMovie);
     }
 
     @Override
