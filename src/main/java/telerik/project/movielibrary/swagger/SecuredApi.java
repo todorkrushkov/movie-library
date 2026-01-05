@@ -8,9 +8,9 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @ApiResponses({
-        @ApiResponse(responseCode = "401", description = "Authentication required"),
-        @ApiResponse(responseCode = "403", description = "Access denied"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(responseCode = "401", description = "Authentication required."),
+        @ApiResponse(responseCode = "403", description = "Access denied."),
+        @ApiResponse(responseCode = "500", description = "Internal server error.")
 })
 public @interface SecuredApi {
 }

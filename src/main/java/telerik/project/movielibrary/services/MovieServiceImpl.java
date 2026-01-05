@@ -10,6 +10,7 @@ import telerik.project.movielibrary.repositories.MovieRepository;
 import telerik.project.movielibrary.services.contracts.MovieService;
 import telerik.project.movielibrary.services.contracts.OmdbService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -20,8 +21,15 @@ public class MovieServiceImpl implements MovieService {
     private final OmdbService omdbService;
 
     @Override
-    public List<Movie> getAll() {
-        return movieRepository.findAll();
+    public List<Movie> getAll(
+            String title,
+            String director,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            Double ratingMin,
+            Double ratingMax
+    ) {
+        return movieRepository.search(title, director, dateFrom, dateTo, ratingMin, ratingMax);
     }
 
     @Override
@@ -31,17 +39,11 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public Movie getByTitle(String title) {
-        return movieRepository.findByTitle(title)
-                .orElseThrow(() -> new EntityNotFoundException("Movie", "title", title));
-    }
-
-    @Override
     @Transactional
     public void create(Movie movie) {
         MovieValidationHelper.validateTitleNotTaken(movieRepository, movie.getTitle());
         movieRepository.save(movie);
-        omdbService.enrichMovieWithRating(movie);
+        omdbService.enrichMovie(movie);
     }
 
     @Override
@@ -53,10 +55,8 @@ public class MovieServiceImpl implements MovieService {
         MovieValidationHelper.validateTitleUpdate(movieRepository, updatedTitle, targetMovie.getTitle());
 
         targetMovie.setTitle(updatedTitle);
-        targetMovie.setDirector(updatedMovie.getDirector());
-        targetMovie.setReleaseYear(updatedMovie.getReleaseYear());
-
         movieRepository.save(targetMovie);
+        omdbService.enrichMovie(targetMovie);
     }
 
     @Override

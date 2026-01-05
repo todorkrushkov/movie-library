@@ -1,10 +1,12 @@
 package telerik.project.movielibrary.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import telerik.project.movielibrary.exceptions.EntityNotFoundException;
 import telerik.project.movielibrary.helpers.validations.UserValidationHelper;
+import telerik.project.movielibrary.models.Role;
 import telerik.project.movielibrary.models.User;
 import telerik.project.movielibrary.repositories.UserRepository;
 import telerik.project.movielibrary.services.contracts.UserService;
@@ -16,10 +18,12 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
 
     @Override
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public List<User> getAll(String username, Role role) {
+        return userRepository.search(username, role);
     }
 
     @Override
@@ -29,15 +33,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User", "username", username));
-    }
-
-    @Override
     @Transactional
     public void create(User user) {
         UserValidationHelper.validateUsernameNotTaken(userRepository, user.getUsername());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
 
@@ -50,7 +49,6 @@ public class UserServiceImpl implements UserService {
         UserValidationHelper.validateUsernameUpdate(userRepository, updatedUsername, targetUser.getUsername());
 
         targetUser.setUsername(updatedUsername);
-        targetUser.setPassword(updatedUser.getPassword());
 
         userRepository.save(targetUser);
     }
@@ -60,5 +58,10 @@ public class UserServiceImpl implements UserService {
     public void delete(Long targetUserId) {
         User targetUser = getById(targetUserId);
         userRepository.delete(targetUser);
+    }
+
+    @Override
+    public long count() {
+        return userRepository.count();
     }
 }

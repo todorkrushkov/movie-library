@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "movies")
 
@@ -24,11 +26,14 @@ public class Movie {
     @Column(name = "title")
     private String title;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "director")
     private String director;
 
-    @Column(name = "release_year")
-    private Integer releaseYear;
+    @Column(name = "release_date")
+    private LocalDate releaseDate;
 
     @Column(name = "rating")
     private Double rating;

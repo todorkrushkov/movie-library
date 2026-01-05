@@ -40,7 +40,7 @@ public class ApiResponseDTO<T> {
             String message
     ) {
         return new ApiResponseDTO<>(
-                true,
+                false,
                 status,
                 path,
                 message,

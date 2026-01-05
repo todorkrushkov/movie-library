@@ -9,9 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import telerik.project.movielibrary.helpers.mappers.UserMapper;
+import telerik.project.movielibrary.models.Role;
 import telerik.project.movielibrary.models.User;
 import telerik.project.movielibrary.models.dtos.api.ApiResponseDTO;
-import telerik.project.movielibrary.models.dtos.user.UserCreateDTO;
 import telerik.project.movielibrary.models.dtos.user.UserResponseDTO;
 import telerik.project.movielibrary.models.dtos.user.UserUpdateDTO;
 import telerik.project.movielibrary.services.contracts.UserService;
@@ -29,11 +29,17 @@ public class UserRestController {
     private final UserService userService;
     private final UserMapper userMapper;
 
-    @Operation(summary = "Get all users")
-    @PreAuthorize("@validateAuth.isAdmin(authentication)")
+    @Operation(summary = "Get all users with filters")
+    @ApiResponse(responseCode = "200", description = "Users retrieved successfully")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ApiResponseDTO<List<UserResponseDTO>> getAll() {
-        List<UserResponseDTO> users = userService.getAll().stream()
+    public ApiResponseDTO<List<UserResponseDTO>> getAll(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) Role role
+            ) {
+        List<UserResponseDTO> users = userService
+                .getAll(username, role)
+                .stream()
                 .map(userMapper::toResponse)
                 .toList();
 
@@ -45,8 +51,9 @@ public class UserRestController {
     }
 
     @Operation(summary = "Get user by ID")
+    @ApiResponse(responseCode = "200", description = "User retrieved successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
-    @PreAuthorize("@validateAuth.isOwnerOrAdmin(#targetUserId, authentication)")
+    @PreAuthorize("hasRole('ADMIN') or @authorize.isOwner(#targetUserId)")
     @GetMapping("/{targetUserId}")
     public ApiResponseDTO<UserResponseDTO> getById(@PathVariable Long targetUserId) {
         User user = userService.getById(targetUserId);
@@ -58,38 +65,11 @@ public class UserRestController {
         );
     }
 
-    @Operation(summary = "Get user by Username")
-    @ApiResponse(responseCode = "404", description = "User not found")
-    @PreAuthorize("@validateAuth.isAdmin(authentication)")
-    @GetMapping("/username/{targetUsername}")
-    public ApiResponseDTO<UserResponseDTO> getByUsername(@PathVariable String targetUsername) {
-        User user = userService.getByUsername(targetUsername);
-
-        return ApiResponseDTO.success(
-                HttpStatus.OK.value(),
-                null,
-                userMapper.toResponse(user)
-        );
-    }
-
-    @Operation(summary = "Create user")
-    @ApiResponse(responseCode = "409", description = "Username already exists")
-    @PreAuthorize("@validateAuth.isAdmin(authentication)")
-    @PostMapping
-    public ApiResponseDTO<UserResponseDTO> create(@Valid @RequestBody UserCreateDTO dto) {
-        User user = userMapper.toCreate(dto);
-        userService.create(user);
-
-        return ApiResponseDTO.success(
-                HttpStatus.CREATED.value(),
-                "User created successfully.",
-                userMapper.toResponse(user)
-        );
-    }
-
     @Operation(summary = "Update user")
+    @ApiResponse(responseCode = "200", description = "User updated successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
-    @PreAuthorize("@validateAuth.isOwnerOrAdmin(#targetUserId, authentication)")
+    @ApiResponse(responseCode = "422", description = "Validation failed")
+    @PreAuthorize("@authorize.isOwner(#targetUserId)")
     @PutMapping("/{targetUserId}")
     public ApiResponseDTO<UserResponseDTO> update(
             @PathVariable Long targetUserId,
@@ -107,8 +87,9 @@ public class UserRestController {
     }
 
     @Operation(summary = "Delete user")
+    @ApiResponse(responseCode = "200", description = "User deleted successfully")
     @ApiResponse(responseCode = "404", description = "User not found")
-    @PreAuthorize("@validateAuth.isOwnerOrAdmin(#targetUserId, authentication)")
+    @PreAuthorize("hasRole('ADMIN') or @authorize.isOwner(#targetUserId)")
     @DeleteMapping("/{targetUserId}")
     public ApiResponseDTO<Void> delete(@PathVariable Long targetUserId) {
         userService.delete(targetUserId);

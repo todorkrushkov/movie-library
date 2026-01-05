@@ -1,7 +1,6 @@
-package telerik.project.movielibrary.models.dtos.user;
+package telerik.project.movielibrary.models.dtos.auth;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,14 +8,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserCreateDTO {
+public class LoginRequestDTO {
 
-    @NotBlank
-    @Size(min = 3, max = 32)
+    @NotBlank(message = "Username is required.")
     private String username;
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = "Password is required.")
     private String password;
-
 }

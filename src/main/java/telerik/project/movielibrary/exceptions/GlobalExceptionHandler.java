@@ -3,10 +3,12 @@ package telerik.project.movielibrary.exceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import telerik.project.movielibrary.models.dtos.api.ApiResponseDTO;
 
 import java.util.HashMap;
@@ -62,8 +64,29 @@ public class GlobalExceptionHandler {
                 .body(ApiResponseDTO.validationError(
                         HttpStatus.UNPROCESSABLE_ENTITY.value(),
                         request.getRequestURI(),
-                        "Validation failed,",
+                        "Validation failed.",
                         errors
+                ));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleBadCredentials(HttpServletRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponseDTO.error(
+                        HttpStatus.UNAUTHORIZED.value(),
+                        request.getRequestURI(),
+                        "Wrong username or password."
+                ));
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ApiResponseDTO<Void>> handleWrongUri(HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponseDTO.error(
+                        404,
+                        request.getRequestURI(),
+                        "Endpoint not found."
                 ));
     }
 

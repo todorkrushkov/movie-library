@@ -12,9 +12,27 @@ CREATE TABLE users
 
 CREATE TABLE movies
 (
-    movie_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL UNIQUE,
-    director VARCHAR(255),
-    release_year INT,
-    rating DOUBLE
+    movie_id     BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title        VARCHAR(255) NOT NULL UNIQUE,
+    description  TEXT,
+    director     VARCHAR(255),
+    release_date DATE,
+    rating       DOUBLE
 );
+
+CREATE TABLE watched_movies
+(
+    watched_movie_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id          BIGINT NOT NULL,
+    movie_id         BIGINT NOT NULL,
+    note             TEXT,
+    watched_at       DATE   NOT NULL,
+
+    CONSTRAINT uq_user_movie UNIQUE (user_id, movie_id),
+
+    CONSTRAINT fk_watched_user FOREIGN KEY (user_id)
+        REFERENCES users (user_id) ON DELETE CASCADE,
+
+    CONSTRAINT fk_watched_movie FOREIGN KEY (movie_id)
+        REFERENCES movies (movie_id) ON DELETE CASCADE
+)

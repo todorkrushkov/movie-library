@@ -12,6 +12,7 @@ import telerik.project.movielibrary.models.Movie;
 import telerik.project.movielibrary.repositories.MovieRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +35,7 @@ class OmdbServiceImplTests {
     }
 
     @Test
-    void enrichMovieWithRating_whenResponseTrue_shouldSetRatingAndSave() {
+    void enrichMovie_whenOmdbReturnsData_shouldEnrichAndSave() {
         Movie movie = new Movie();
         movie.setTitle("Inception");
 
@@ -44,7 +45,7 @@ class OmdbServiceImplTests {
 
         when(omdbClient.fetchByTitle("Inception")).thenReturn(response);
 
-        omdbService.enrichMovieWithRating(movie);
+        omdbService.enrichMovie(movie);
 
         assertEquals(8.8, movie.getRating());
 
@@ -54,7 +55,7 @@ class OmdbServiceImplTests {
     }
 
     @Test
-    void enrichMovieWithRating_whenResponseFalse_shouldNotSetRatingButStillSave() {
+    void enrichMovie_whenOmdbReturnsNoData_shouldSaveWithoutEnrichment() {
         Movie movie = new Movie();
         movie.setTitle("Unknown");
 
@@ -63,9 +64,9 @@ class OmdbServiceImplTests {
 
         when(omdbClient.fetchByTitle("Unknown")).thenReturn(response);
 
-        omdbService.enrichMovieWithRating(movie);
+        omdbService.enrichMovie(movie);
 
-        assertEquals(null, movie.getRating());
+        assertNull(movie.getRating());
 
         verify(omdbClient).fetchByTitle("Unknown");
         verify(movieRepository).save(movie);

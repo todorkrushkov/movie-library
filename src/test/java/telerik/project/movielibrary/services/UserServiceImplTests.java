@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import telerik.project.movielibrary.exceptions.EntityDuplicateException;
 import telerik.project.movielibrary.exceptions.EntityNotFoundException;
 import telerik.project.movielibrary.models.User;
@@ -22,6 +23,9 @@ class UserServiceImplTests {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -32,18 +36,18 @@ class UserServiceImplTests {
         existingUser = new User();
         existingUser.setId(1L);
         existingUser.setUsername("oldname");
-        existingUser.setPassword("oldpass");
+        existingUser.setPassword("encoded_pass");
     }
 
     @Test
-    void getAll_shouldReturnAllUsers() {
-        when(userRepository.findAll()).thenReturn(List.of(existingUser));
+    void getAll_shouldReturnUsersFromSearch() {
+        when(userRepository.search(null, null)).thenReturn(List.of(existingUser));
 
-        List<User> result = userService.getAll();
+        List<User> result = userService.getAll(null, null);
 
         assertEquals(1, result.size());
         assertSame(existingUser, result.get(0));
-        verify(userRepository).findAll();
+        verify(userRepository).search(null, null);
         verifyNoMoreInteractions(userRepository);
     }
 
@@ -63,29 +67,7 @@ class UserServiceImplTests {
         when(userRepository.findById(42L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> userService.getById(42L));
-
         verify(userRepository).findById(42L);
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getByUsername_whenExists_shouldReturnUser() {
-        when(userRepository.findByUsername("oldname")).thenReturn(Optional.of(existingUser));
-
-        User result = userService.getByUsername("oldname");
-
-        assertSame(existingUser, result);
-        verify(userRepository).findByUsername("oldname");
-        verifyNoMoreInteractions(userRepository);
-    }
-
-    @Test
-    void getByUsername_whenMissing_shouldThrowEntityNotFoundException() {
-        when(userRepository.findByUsername("missing")).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> userService.getByUsername("missing"));
-
-        verify(userRepository).findByUsername("missing");
         verifyNoMoreInteractions(userRepository);
     }
 
@@ -93,13 +75,14 @@ class UserServiceImplTests {
     void create_whenUsernameFree_shouldCheckExistsAndSave() {
         User newUser = new User();
         newUser.setUsername("newname");
-        newUser.setPassword("p");
+        newUser.setPassword("raw");
 
         when(userRepository.existsByUsername("newname")).thenReturn(false);
 
         userService.create(newUser);
 
         verify(userRepository).existsByUsername("newname");
+        verify(passwordEncoder).encode("raw");
         verify(userRepository).save(newUser);
         verifyNoMoreInteractions(userRepository);
     }
@@ -108,7 +91,7 @@ class UserServiceImplTests {
     void create_whenUsernameTaken_shouldThrowEntityDuplicateException() {
         User newUser = new User();
         newUser.setUsername("taken");
-        newUser.setPassword("p");
+        newUser.setPassword("raw");
 
         when(userRepository.existsByUsername("taken")).thenReturn(true);
 
@@ -116,6 +99,7 @@ class UserServiceImplTests {
 
         verify(userRepository).existsByUsername("taken");
         verify(userRepository, never()).save(any());
+        verify(passwordEncoder, never()).encode(any());
         verifyNoMoreInteractions(userRepository);
     }
 
@@ -125,7 +109,6 @@ class UserServiceImplTests {
 
         User updated = new User();
         updated.setUsername("whatever");
-        updated.setPassword("pass");
 
         assertThrows(EntityNotFoundException.class, () -> userService.update(99L, updated));
 
@@ -145,7 +128,7 @@ class UserServiceImplTests {
         userService.update(1L, updated);
 
         assertEquals("newname", existingUser.getUsername());
-        assertEquals("newpass", existingUser.getPassword());
+        assertEquals("encoded_pass", existingUser.getPassword());
 
         verify(userRepository).findById(1L);
         verify(userRepository).existsByUsername("newname");
