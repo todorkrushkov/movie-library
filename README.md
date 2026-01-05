@@ -180,6 +180,9 @@ Implemented using `@RestControllerAdvice`.
 
 ---
 
+## DB ER Diagram
+![Database Schema](assets/db-schema.png)
+
 ## API Endpoints (Summary)
 
 ### Authentication
@@ -276,7 +279,6 @@ For further information, questions, or feedback, feel free to get in touch:
 - This project was developed as part of the **Java Alpha program at Telerik Academy**.
 - The application is designed to prioritize clarity, correctness, and testability
 - Security and asynchronous behavior are implemented explicitly rather than implicitly
-
 
 Developed as part of a Telerik Academy backend engineering project.
 
