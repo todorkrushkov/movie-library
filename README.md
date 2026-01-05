@@ -1,203 +1,264 @@
-# Movie Library REST API
+<div align="center">
 
-## Overview
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=35&pause=1000&color=6DB33F&center=true&vCenter=true&width=600&lines=Movie+Library+REST+API;Secure+Spring+Boot+Backend;Asynchronous+OMDb+Enrichment;Role-Based+Access+Control" alt="Typing SVG" />
 
-Movie Library is a secure RESTful Spring Boot application for managing a catalog of movies. In addition to standard CRUD operations, the system enriches movies with rating data retrieved from an external movie information service (OMDb API). The rating enrichment is performed asynchronously, ensuring that movie creation requests remain fast and non-blocking.
+[![Java](https://img.shields.io/badge/Java-17-555555?style=for-the-badge&logo=openjdk&logoColor=white&labelColor=ED8B00)](#)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.7-555555?style=for-the-badge&logo=springboot&logoColor=white&labelColor=6DB33F)](#)
+[![Gradle](https://img.shields.io/badge/Gradle-8.5-555555?style=for-the-badge&logo=gradle&logoColor=white&labelColor=02303A)](#)
+[![MariaDB](https://img.shields.io/badge/MariaDB-10.11-555555?style=for-the-badge&logo=mariadb&logoColor=white&labelColor=003545)](#)
+[![JWT](https://img.shields.io/badge/JWT-0.11.5-555555?style=for-the-badge&logo=jsonwebtokens&logoColor=white&labelColor=000000)](#)
+[![Swagger](https://img.shields.io/badge/Swagger-3.0-555555?style=for-the-badge&logo=swagger&logoColor=black&labelColor=85EA2D)](#)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0-555555?style=for-the-badge&logo=openapiinitiative&logoColor=white&labelColor=6BA539)](#)
 
-The application demonstrates clean architecture, role-based authorization, asynchronous processing, and comprehensive test coverage.
+A **secure, production-style Spring Boot REST API** for managing a movie catalog with users, roles, watched movies, and **asynchronous enrichment from the OMDb API**.
 
 ---
+</div>
 
 ## Core Features
 
 ### Movie Management
+- CRUD operations for movies (**ADMIN only**)
+- Public movie search with advanced filters:
+    - Partial title match
+    - Director
+    - Release date range
+    - IMDb rating range
+- **Asynchronous enrichment** using OMDb API:
+    - IMDb rating
+    - Director
+    - Release date
+- Validation against duplicate movie titles
 
-- Create, retrieve, update, and delete movies
-- Each movie contains:
-  - ID (auto-generated)
-  - Title (required)
-  - Director
-  - Release year
-  - Rating (initially nullable)
-- Validation for input data (e.g. required title, reasonable release year)
+### User & Access Management
+- Secure user registration, login, and logout
+- Role-based authorization (`USER`, `ADMIN`)
+- Ownership-based access control for user resources
+- Dev profile data seeding for faster local testing
 
-### External Rating Enrichment
-
-- When a movie is created, the system queries the OMDb API using the movie title
-- If a rating is available, it is extracted and saved to the local movie record
-- The enrichment process runs asynchronously and does not block the API request
-
-### User Management
-
-- User entity with roles: `ADMIN` and `USER`
-- Role-based authorization rules enforced at method level
-- Ownership checks for user-specific operations
-
----
-
-## Security
-
-The application is secured using Spring Security with role-based authorization.
-
-### Roles
-
-- **ADMIN**
-  - Full CRUD access to movies
-  - Full access to user management
-
-- **USER**
-  - Read-only access to movie data
-  - Access only to their own user information
-
-### Authorization Model
-
-- Method-level security via `@PreAuthorize`
-- Custom authorization helper used for:
-  - Authentication validation
-  - Admin-only access checks
-  - Owner-or-admin access checks
-
-Security logic is centralized and fully covered by unit and controller tests.
+### Watched Movies
+- Per-user watched movie tracking
+- Notes attached to watched movies
+- Duplicate watched movie prevention
+- Automatic watched date tracking
 
 ---
 
-## Asynchronous Processing
+## Technical Highlights
 
-- Movie rating enrichment is executed in the background
-- The movie creation endpoint returns immediately
-- External API latency does not impact request performance
-
-This design ensures responsiveness while still providing enriched data.
-
----
-
-## Architecture & Design Decisions
-
-- Layered architecture (Controller → Service → Repository)
-- DTOs and mappers used to separate API models from persistence models
-- Centralized exception handling for consistent error responses
-- External API integration isolated behind service abstractions
-- Designed for extensibility (e.g. token-based authentication can be added without structural changes)
+### JWT Authentication via HTTP-only Cookies
+- JWT tokens are generated on login/registration
+- Stored in **HTTP-only cookies** (not local storage)
+- Custom `JwtAuthenticationFilter`:
+    - Extracts JWT from cookies
+    - Validates token integrity & expiration
+    - Populates Spring Security context
+- Protects against XSS-based token theft
 
 ---
 
-## Database Schema
+### Unified API Response Contract
+All API responses follow a **single response schema**:
 
-The database schema below illustrates the relational structure of the system,
-including users, roles, and movies. It reflects the authorization model
-and supports the defined access rules.
-
-![Database Schema](assets/db-schema.png)
-
----
-
-## Tech Stack
-
-- Java 17+
-- Spring Boot
-- Spring Web
-- Spring Security
-- Spring Data JPA / Hibernate
-- MariaDB
-- OMDb API
-- Swagger / OpenAPI
-- JUnit 5 & Mockito
-
----
-
-## Testing
-
-The project includes extensive test coverage:
-
-- Unit tests for services, mappers, validation helpers, and security helpers
-- Controller tests with mocked dependencies and security context
-- Authorization paths (ADMIN vs USER vs OWNER) are explicitly tested
-
-Test coverage exceeds typical academic requirements and focuses on correctness and security behavior.
-
----
-
-## API Documentation
-
-Swagger UI is available once the application is running:
-
-```
-http://localhost:8080/swagger-ui/index.html
+```json
+{
+  "success": true,
+  "status": 200,
+  "path": null,
+  "message": "Operation successful.",
+  "data": {},
+  "errors": null,
+  "timestamp": "2026-01-01T12:00:00"
+}
 ```
 
-All endpoints, request bodies, and response models are documented.
+## Benefits
+- Predictable API behavior
+- Easy frontend integration
+- Centralized error handling
 
 ---
 
-## Setup & Installation
+## Centralized Global Exception Handling
 
-### Prerequisites
+Implemented using `@RestControllerAdvice`.
 
-- Java 17+
-- MariaDB
+**Handled exceptions**
+- `EntityNotFoundException`
+- `EntityDuplicateException`
+- `AuthenticationFailureException`
+- `AuthorizationFailureException`
+- `ExternalApiServiceException`
+- Validation & framework exceptions
 
-### Steps
+**HTTP status mapping**
+- `401` – Authentication failure
+- `403` – Authorization failure
+- `404` – Resource not found
+- `409` – Duplicate entity
+- `422` – Validation errors
+- `500` – Unexpected server errors
 
-1. Clone the repository
-   ```bash
-   git clone <repository-url>
+---
+
+## Method-Level Authorization & Ownership Validation
+- Uses `@PreAuthorize`
+- Custom authorization helper:
+
+```java
+@PreAuthorize("hasRole('ADMIN') or @authorize.isOwner(#userId)")
+```
+
+- Enforces resource ownership
+- Keeps authorization logic out of business services
+
+---
+
+## Asynchronous External API Integration
+- OMDb enrichment runs in the background using `@Async`
+- Movie creation remains **non-blocking**
+- Fault-tolerant handling of:
+    - Client errors
+    - Server errors
+    - Network timeouts
+- Movies are enriched **after persistence** for data consistency
+
+---
+
+## DTO & Mapper-Based Design
+- Entities are never exposed directly
+- Dedicated mapper classes:
+    - `MovieMapper`
+    - `UserMapper`
+    - `WatchedMovieMapper`
+    - `OmdbMapper`
+- Supports partial updates and clean API contracts
+
+---
+
+## Security Hardening
+- Stateless security with JWT
+- CSRF disabled (cookie-based JWT)
+- Custom handlers:
+    - `CustomAuthenticationEntryPoint`
+    - `CustomAccessDeniedHandler`
+- Clear separation between authentication and authorization
+
+---
+
+## Validation Strategy
+- Jakarta Bean Validation (`@NotBlank`, `@Size`)
+- Validation failures return:
+    - Field-level error messages
+    - HTTP `422 Unprocessable Entity`
+- Business rule validation separated into helper classes
+
+---
+
+## Clean Layered Architecture
+
+```text
+  Controller  →  Service  →  Repository
+    ↓    ↑        ↓   ↑
+   DTO Entity   Validation
+    ↓    ↑
+    Mapper
    ```
 
-2. Initialize the database
-
-    The project includes SQL scripts for database creation and initial data population.
-   - Create the database schema from: `db/create.sql`
-   - Insert initial data from: `db/inserts.sql`
-
-
-3. Configure application properties
-
-   Update application.properties with your local configuration:
-      ```properties
-      spring.datasource.url=jdbc:mariadb://localhost:3306/movie_library
-      spring.datasource.username=your_db_user
-      spring.datasource.password=your_db_password
-
-      omdb.api.key=YOUR_OMDB_API_KEY
-      ```
-
-4. Run the application from your IDE or using:
-   ```bash
-   ./gradlew bootRun
-   ```
-   
-5. Access the API
-
-   - Swagger UI:
-     ```
-     http://localhost:8080/swagger-ui/index.html
-     ```
-
-     Swagger provides full documentation of all available endpoints,
-     request/response models, and authorization rules.
-
-   - Postman:
-     ```
-     http://localhost:8080/api
-     ```
+- Business logic isolated in services
+- Reusable validation helpers
+- Repositories limited to data access
 
 ---
 
+## Database & Persistence Design
+- MariaDB with JPA/Hibernate
+- Custom JPQL search queries
+- Lazy-loaded relations
+- Explicit transactional boundaries
+- Identity-based entity equality
+
 ---
 
-## Technical Documentation
+## API Endpoints (Summary)
 
-A detailed explanation of the system architecture, security model, and asynchronous processing
-is available in the following document:
+### Authentication
 
-- **[TECHNICAL_DOCUMENTATION.md](TECHNICAL_DOCUMENTATION.md)**
+```text
+POST   /api/auth/register
+POST   /api/auth/login
+POST   /api/auth/logout
+```
 
-The document covers:
-- Overall system architecture and layering
-- Authentication and authorization flow
-- Role-based access control (ADMIN / USER)
-- Asynchronous movie rating enrichment
-- Key architectural decisions and trade-offs
+### Movies
+
+```text
+GET    /api/movies
+GET    /api/movies/{id}
+POST   /api/movies           (ADMIN)
+PUT    /api/movies/{id}      (ADMIN)
+DELETE /api/movies/{id}      (ADMIN)
+```
+
+### Users
+
+```text
+GET    /api/users             (ADMIN)
+GET    /api/users/{id}
+PUT    /api/users/{id}
+DELETE /api/users/{id}
+```
+
+### Watched Movies
+
+```text
+GET    /api/users/{userId}/watched
+POST   /api/users/{userId}/watched/{movieId}
+PUT    /api/users/{userId}/watched/{movieId}
+```
+
+---
+
+## Development Profile
+
+When running with the dev profile, the application auto-seeds users:
+
+| Username | Password | Role |
+|----------|----------|------|
+| admin    | admin12  | ADMIN |
+| user     | 12345678 | USER |
+
+---
+
+## Configuration
+
+```properties
+spring.datasource.url=jdbc:mariadb://localhost:3306/movie_library
+spring.datasource.username=your_db_user
+spring.datasource.password=your_db_password
+
+omdb.api.key=YOUR_OMDB_API_KEY
+```
+
+## Running the Application
+
+```bash
+  ./gradlew bootRun
+```
+
+## Swagger UI:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
+---
+
+## Future Enhancements
+- Refresh tokens
+- Rate limiting
+- OMDb response caching
+- Integration and contract testing
 
 ---
 
@@ -215,3 +276,8 @@ For further information, questions, or feedback, feel free to get in touch:
 - This project was developed as part of the **Java Alpha program at Telerik Academy**.
 - The application is designed to prioritize clarity, correctness, and testability
 - Security and asynchronous behavior are implemented explicitly rather than implicitly
+
+
+Developed as part of a Telerik Academy backend engineering project.
+
+Built with clean code, security, and scalability in mind.

@@ -5,8 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import telerik.project.movielibrary.models.dtos.api.ApiResponseDTO;
 
@@ -15,29 +15,30 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
-    public static final String message = "Authentication required.";
+    public static final String message = "You are not allowed to access this resource.";
 
     @Override
-    public void commence(
+    public void handle(
             HttpServletRequest request,
             HttpServletResponse response,
-            AuthenticationException authenticationException
+            AccessDeniedException accessDeniedException
     ) throws IOException {
+
         ApiResponseDTO<Void> apiResponse = new ApiResponseDTO<> (
-         false,
-         HttpStatus.UNAUTHORIZED.value(),
-         request.getRequestURI(),
-         message,
-         null,
-         null,
-         LocalDateTime.now()
+                false,
+                HttpStatus.FORBIDDEN.value(),
+                request.getRequestURI(),
+                message,
+                null,
+                null,
+                LocalDateTime.now()
         );
 
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json");
-        objectMapper.writeValue(response.getOutputStream(), apiResponse);
+        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import telerik.project.movielibrary.models.Movie;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -15,16 +16,16 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             SELECT m FROM Movie m
             WHERE (:title IS NULL OR LOWER(m.title) LIKE LOWER(CONCAT('%', :title, '%')))
               AND (:director IS NULL OR LOWER(m.director) LIKE LOWER(CONCAT('%', :director, '%')))
-              AND (:yearFrom IS NULL OR m.releaseYear >= :yearFrom)
-              AND (:yearTo IS NULL OR m.releaseYear <= :yearTo)
+              AND (:dateFrom IS NULL OR m.releaseDate >= :dateFrom)
+              AND (:dateTo IS NULL OR m.releaseDate <= :dateTo)
               AND (:ratingMin IS NULL OR m.rating >= :ratingMin)
               AND (:ratingMax IS NULL OR m.rating <= :ratingMax)
     """)
     List<Movie> search(
             @Param("title") String title,
             @Param("director") String director,
-            @Param("yearFrom") Integer yearFrom,
-            @Param("yearTo") Integer yearTo,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo,
             @Param("ratingMin") Double ratingMin,
             @Param("ratingMax") Double ratingMax
     );

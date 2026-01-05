@@ -2,7 +2,6 @@ package telerik.project.movielibrary.helpers.mappers;
 
 import org.springframework.stereotype.Component;
 import telerik.project.movielibrary.models.User;
-import telerik.project.movielibrary.models.dtos.user.UserCreateDTO;
 import telerik.project.movielibrary.models.dtos.user.UserResponseDTO;
 import telerik.project.movielibrary.models.dtos.user.UserUpdateDTO;
 
@@ -24,14 +23,4 @@ public class UserMapper {
             user.setUsername(dto.getUsername());
         }
     }
-
-    public User toCreate(UserCreateDTO dto) {
-        User user = new User();
-
-        user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword());
-
-        return user;
-    }
-
 }
